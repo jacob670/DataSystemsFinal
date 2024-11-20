@@ -10,7 +10,7 @@ swimming_data = pd.read_csv('Olympic_Swimming_Results_1912to2020.csv')
 
 
 """
-Initial Data Inspection
+* Initial Data Inspection
 """
 
 # What are the data types of each column listed?
@@ -53,9 +53,8 @@ male_athletes = swimming_data[swimming_data['Gender'] == 'Men']
 unique_male_athletes = male_athletes['Athlete'].nunique()
 # There are 1504 male athletes in this dataset
 
-
 """
-Data Cleanup
+* Data Cleanup 
 """
 
 """
@@ -73,12 +72,50 @@ swimming_data.loc[swimming_data['Rank'] == 0, 'Rank'] = 5
 # Rename the Team column to 'Country' in order for clarification
 swimming_data.rename(columns={"Team": "Country"}, inplace=True)
 
-# FIX NULL VALUES HERE NEED MORE INFO
+# TODO: FIX NULL VALUES HERE NEED MORE INFO
 
-# Add a string version of 'Rank' column. Display actual titles
+# Add a string version of 'Rank' column in order for data to be more readable
+rank_medal_mapping = {
+    1: 'Gold',
+    2: 'Silver',
+    3: 'Bronze',
+    4: 'No Medal',
+    5: 'DNS/DNF or Disqualified',
+    6: 'No Data'
+    }
 
-# dont know why this doesnt work
+swimming_data['Medal?'] = swimming_data['Rank'].map(rank_medal_mapping)
+            
+# Swap the Relay column with string values instead of boolean logic; Makes it more readable again
+relay_mapping = {
+    0: 'Individual',
+    1: 'Relay'
+    }
+
+title_switch_mapping = {
+    'Relay?': 'Race Format'
+    }
+
+swimming_data['Relay?'] = swimming_data['Relay?'].map(relay_mapping)
+swimming_data.rename(columns=title_switch_mapping, inplace=True)
+
+# Convert Distance column into an integer column to allow calculations
+def convert_values(distance):
+    """ if the distance contains x, split the string and mutiply the values to return the total distance for relays
+        otherwise, eliminate the character m at the end of every indivudal event """
+        
+    if 'x' in distance:
+        parts = distance.split('x')
+        if len(parts) == 2:
+            num1, num2 = parts
+            return int(num1) * int(num2)
+    else:
+        return int(distance.replace("m", ""))
+        
+swimming_data['Distance (in meters)'] = swimming_data['Distance (in meters)'].apply(convert_values)
+swimming_data.rename(columns={'Distance (in meters)': 'Distance (m)'}, inplace=True)
 
 
-
+# The default data type for the results currently are objects. In order to perform data anaylsis techniques on the set, we must convert this column to floating point numbers
+#TODO KINDA COMPLICATED WITH MINUTES ALSO
 
