@@ -118,4 +118,3 @@ swimming_data.rename(columns={'Distance (in meters)': 'Distance (m)'}, inplace=T
 
 # The default data type for the results currently are objects. In order to perform data anaylsis techniques on the set, we must convert this column to floating point numbers
 #TODO KINDA COMPLICATED WITH MINUTES ALSO
-
