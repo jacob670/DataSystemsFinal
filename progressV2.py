@@ -5,7 +5,6 @@ Place summary/quick description of project and file right here
 """
 
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 
 swimming_data = pd.read_csv('Olympic_Swimming_Results_1912to2020.csv')
@@ -264,74 +263,50 @@ early_winners_100free = swimming_data[
 mean_100free_time = early_winners_100free['Results'].mean()
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 """
-* Data Visualizations 
+* Data Exploration and Visualization Techniques
 """
 
-# Medals won by each country: BAR CHART
+# TEST GRAPH, NOT REAL THING
+fig, ax = plt.subplots()
 medals_by_country = swimming_data['Country'].value_counts()
 
-# Create a figure and axes for the plot
-fig, ax = plt.subplots(figsize=(30, 10))
 
-# Plot the bar chart using the ax object
-ax.bar(medals_by_country.index, medals_by_country.values, color='skyblue')
+plt.figure(figsize=(10, 6))
+medals_by_country.plot(kind='bar', color='skyblue')
 
-# Set the title and axis labels
-ax.set_title('Medals Won by Each Country', fontsize=16)
-ax.set_xlabel('Country', fontsize=14)
-ax.set_ylabel('Number of Medals', fontsize=14)
 
-# Rotate the x-axis labels by 45 degrees for better readability
-ax.set_xticklabels(medals_by_country.index, rotation=45)
+plt.title('Medals Won by Each Country', fontsize=16)
+plt.xlabel('Country', fontsize=14)
+plt.ylabel('Number of Medals', fontsize=14)
 
-# Adjust layout to prevent clipping of labels
+
+plt.xticks(rotation=45)
 plt.tight_layout()
 
-
-
-
-
-
-
-
-
-
-
-
-gold_medals = swimming_data[swimming_data['Rank'] == 1]
-unique_gold_medal_count = gold_medals["Country"].value_counts()
-
-silver_medals = swimming_data[swimming_data['Rank'] == 2]
-unique_silver_medal_count = silver_medals["Country"].value_counts()
-
-bronze_medals = swimming_data[swimming_data['Rank'] == 3]
-unique_bronze_medal_count = bronze_medals["Country"].value_counts()
-
-fig, ax = plt.subplots(figsize=(30, 10))
-ax.bar(unique_gold_medal_count.index, unique_gold_medal_count.values, color="yellow", label="Gold Medals")
-
-# Add labels and title
-ax.set_xlabel("Country")
-ax.set_ylabel("Number of Gold Medals")
-ax.set_title("Gold Medals by Country")
-ax.legend()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+plt.show()
