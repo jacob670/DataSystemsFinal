@@ -20,7 +20,7 @@ INSERT INTO olympicSwimmingResults_1912_2020 VALUES(3, "Tokyo", 2020, "100m", "B
 INSERT INTO olympicSwimmingResults_1912_2020 VALUES(4, "Tokyo", 2020, "100m", "Backstroke", 0, "Men", "ITA", "Thomas Ceccon", "52.3", 4);
 INSERT INTO olympicSwimmingResults_1912_2020 VALUES(5, "Tokyo", 2020, "100m", "Backstroke", 0, "Men", "CHN", "Jiayu Xu", "52.51", 4);
 
--- Get the column types and corresponding data types
-SELECT COLUMN_NAME, DATA_TYPE
-    FROM INFORMATION_SCHEMA.COLUMNS
-WHERE TABLE_NAME = "olympicSwimmingResults_1912_2020";
+-- -- Get the column types and corresponding data types
+-- SELECT COLUMN_NAME, DATA_TYPE
+--     FROM INFORMATION_SCHEMA.COLUMNS
+-- WHERE TABLE_NAME = "olympicSwimmingResults_1912_2020";

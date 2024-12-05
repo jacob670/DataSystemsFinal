@@ -268,36 +268,8 @@ mean_100free_time = early_winners_100free['Results'].mean()
 * Data Visualizations 
 """
 
-# Medals won by each country: BAR CHART
-medals_by_country = swimming_data['Country'].value_counts()
-
-# Create a figure and axes for the plot
-fig, ax = plt.subplots(figsize=(30, 10))
-
-# Plot the bar chart using the ax object
-ax.bar(medals_by_country.index, medals_by_country.values, color='skyblue')
-
-# Set the title and axis labels
-ax.set_title('Medals Won by Each Country', fontsize=16)
-ax.set_xlabel('Country', fontsize=14)
-ax.set_ylabel('Number of Medals', fontsize=14)
-
-# Rotate the x-axis labels by 45 degrees for better readability
-ax.set_xticklabels(medals_by_country.index, rotation=45)
-
-# Adjust layout to prevent clipping of labels
-plt.tight_layout()
-
-
-
-
-
-
-
-
-
-
-
+# Reference for this bar graph using a numpy array approach
+# https://matplotlib.org/stable/gallery/lines_bars_and_markers/bar_stacked.html#sphx-glr-gallery-lines-bars-and-markers-bar-stacked-py
 
 gold_medals = swimming_data[swimming_data['Rank'] == 1]
 unique_gold_medal_count = gold_medals["Country"].value_counts()
@@ -308,30 +280,32 @@ unique_silver_medal_count = silver_medals["Country"].value_counts()
 bronze_medals = swimming_data[swimming_data['Rank'] == 3]
 unique_bronze_medal_count = bronze_medals["Country"].value_counts()
 
-fig, ax = plt.subplots(figsize=(30, 10))
-ax.bar(unique_gold_medal_count.index, unique_gold_medal_count.values, color="yellow", label="Gold Medals")
+medals_dict = {
+    "Gold": np.array(unique_gold_medal_count.reindex(unique_gold_medal_count.index, fill_value=0)),
+    "Silver": np.array(unique_silver_medal_count.reindex(unique_gold_medal_count.index, fill_value=0)),
+    "Bronze": np.array(unique_bronze_medal_count.reindex(unique_gold_medal_count.index, fill_value=0)),
+}
 
-# Add labels and title
-ax.set_xlabel("Country")
-ax.set_ylabel("Number of Gold Medals")
-ax.set_title("Gold Medals by Country")
+fig, ax = plt.subplots(figsize=(30, 10))
+
+countries = unique_gold_medal_count.index
+bottom = np.zeros(len(countries))
+
+# Loop through each medal type in the medals_dict
+colors = {
+    "Gold": "lightblue", 
+    "Silver": "lightgreen", 
+    "Bronze": "lightcoral"
+   } 
+
+for medal_type, medal_counts in medals_dict.items():
+    ax.bar(countries, medal_counts, color=colors[medal_type], label=f"{medal_type} Medals", bottom=bottom)
+    bottom += medal_counts  # Update bottom for the next medal type
+
+ax.set_xticklabels(countries, rotation=60)
 ax.legend()
 
+plt.show()
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# NEED TO SETUP X AND Y LABELS, ALONG WITH TOP 10 COUNTIRES INSTEAD OF ALL THEM
+# ORGANIZE IT BETTER, MAKE IT THICKER
