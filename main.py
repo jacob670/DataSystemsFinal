@@ -1,18 +1,18 @@
 """
-Place summary/quick description of project and file right here
-
-@authors: Jacob Esteves
+Analyzing and interepting Olympic Swimming History data. Performed data inspection and clean up, aggregations, cross tabulation, logarithmic regression, and created data visualizations
+The dataset can be found here: https://www.kaggle.com/datasets/datasciencedonut/olympic-swimming-1912-to-2020?resource=download
+Jacob Esteves, Cimi Halilaj, Owen Rogonjic
 """
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 swimming_data = pd.read_csv('Olympic_Swimming_Results_1912to2020.csv')
 
-
 """
-* Initial Data Inspection
+================== INITIAL DATA INSPECTION ==================
 """
 
 # What are the data types of each column listed?
@@ -53,7 +53,7 @@ head_values = swimming_data.head()
 # How many different Countries have medals?
 medal_list = [1,2,3]
 unique_teams = swimming_data[swimming_data['Rank'].isin(medal_list)]
-num_unique_medals = medals['Team'].nunique()
+num_unique_medals = unique_teams['Team'].nunique()
 # There are 60 Countries with medals in the dataset.
 
 
@@ -63,8 +63,12 @@ unique_male_athletes = male_athletes['Athlete'].nunique()
 # There are 1504 male athletes in this dataset
 
 
+
+
+
+
 """
-* Data Cleanup 
+================== DATA CLEANUP ==================
 """
 
 """
@@ -176,12 +180,23 @@ def convert_results_seconds(result):
     else:
         return result
 
-# WILL CHANGE AND JUST REVERT TO NEW OR ORIGINAL COLUMN. WAS TESTING
+
+def convert_float(value):
+    try:
+        return float(value)
+    except:
+        return None
+    
 swimming_data['Time_in_Seconds'] = swimming_data['Results'].apply(convert_results_seconds)
+swimming_data['Time (s)'] = swimming_data['Time_in_Seconds'].apply(convert_float)
+
+
+
+
 
 
 """
-* Slicing and Dicing the Data
+================== SLICING AND DICING THE DATA ==================
 """
 
 # What is the minimum time at the men's 200 individual medley at the 2016 Olympics (1st place winner)
@@ -212,7 +227,7 @@ gold_medals_by_swimmer = gold_medals_by_swimmer.sort_values(ascending=False)
 
 
 """
- Make a function that creates a new column 'Race Type' depending on how long the race is.  
+ Function that creates a new column 'Race Type' depending on how long the race is.  
 
  length < 100: Sprint
  200 <= length <= 500: Middle-Distance
@@ -264,12 +279,16 @@ early_winners_100free = swimming_data[
 mean_100free_time = early_winners_100free['Results'].mean()
 
 
+
+
+
+
 """
-* Data Visualizations 
+================== DATA VISUALIZATIONS ==================
 """
 
-# Reference for this bar graph using a numpy array approach
-# https://matplotlib.org/stable/gallery/lines_bars_and_markers/bar_stacked.html#sphx-glr-gallery-lines-bars-and-markers-bar-stacked-py
+# VISUALIZATION 1
+# Bar Graph comparing the top 10 Countries with highest medal count, and what medals they may contain
 
 gold_medals = swimming_data[swimming_data['Rank'] == 1]
 unique_gold_medal_count = gold_medals["Country"].value_counts()
@@ -280,32 +299,277 @@ unique_silver_medal_count = silver_medals["Country"].value_counts()
 bronze_medals = swimming_data[swimming_data['Rank'] == 3]
 unique_bronze_medal_count = bronze_medals["Country"].value_counts()
 
-medals_dict = {
-    "Gold": np.array(unique_gold_medal_count.reindex(unique_gold_medal_count.index, fill_value=0)),
-    "Silver": np.array(unique_silver_medal_count.reindex(unique_gold_medal_count.index, fill_value=0)),
-    "Bronze": np.array(unique_bronze_medal_count.reindex(unique_gold_medal_count.index, fill_value=0)),
-}
+top = unique_gold_medal_count + unique_silver_medal_count + unique_bronze_medal_count
+top_sorted = top.sort_values(ascending=False)
 
-fig, ax = plt.subplots(figsize=(30, 10))
+medal_counts = pd.DataFrame({
+    'Gold': unique_gold_medal_count,
+    'Silver': unique_silver_medal_count,
+    'Bronze': unique_bronze_medal_count
+})
 
-countries = unique_gold_medal_count.index
-bottom = np.zeros(len(countries))
-
-# Loop through each medal type in the medals_dict
 colors = {
-    "Gold": "lightblue", 
-    "Silver": "lightgreen", 
-    "Bronze": "lightcoral"
-   } 
+    "Gold": "royalblue", 
+    "Silver": "slategray", 
+    "Bronze": "silver"
+} 
 
-for medal_type, medal_counts in medals_dict.items():
-    ax.bar(countries, medal_counts, color=colors[medal_type], label=f"{medal_type} Medals", bottom=bottom)
-    bottom += medal_counts  # Update bottom for the next medal type
+medal_counts['Total'] = medal_counts['Gold'] + medal_counts['Silver'] + medal_counts['Bronze']
+top_ten_countries = medal_counts.sort_values(by='Total', ascending=False).head(10)
 
-ax.set_xticklabels(countries, rotation=60)
-ax.legend()
+top_ten_countries[['Gold', 'Silver', 'Bronze']].plot(kind='bar', stacked=True, figsize=(10, 6), color=[colors['Gold'], colors['Silver'], colors['Bronze']])
+
+plt.xlabel('Country', fontsize=14)
+plt.ylabel('Number of Medals', fontsize=16)
+plt.title('Top 10 Countries by Medal Count', fontsize=16)
+plt.xticks(rotation=0)
+plt.legend(title='Medals')
 
 plt.show()
 
-# NEED TO SETUP X AND Y LABELS, ALONG WITH TOP 10 COUNTIRES INSTEAD OF ALL THEM
-# ORGANIZE IT BETTER, MAKE IT THICKER
+
+
+
+
+# VISUALIZATION 2
+# Scatterplot throughout 1912-2020 of 200 women’s freestyle winners
+
+fig, ax = plt.subplots()
+
+women_two_hundred_winners = swimming_data[(swimming_data['Gender'] == 'Women') & 
+                                          (swimming_data['Event'] == '200m Freestyle') & 
+                                          (swimming_data['Rank'] == 1)]
+
+
+ax.scatter(women_two_hundred_winners['Year'], women_two_hundred_winners['Time_in_Seconds'], color='royalblue')
+plt.plot(women_two_hundred_winners['Year'], women_two_hundred_winners['Time_in_Seconds'], color='slategray')
+
+plt.xlabel('Olympic Year')
+plt.ylabel('Time (s)')
+plt.title('200m Freestyle Winners (Women) Time vs. Year')
+
+plt.show()
+
+
+
+
+
+# VISUALIZATION 3
+# Barchart of different 100 meter race best times for men and women
+
+fig, ax = plt.subplots(figsize=(10, 6))
+strokes = ['Backstroke', 'Breaststroke', 'Butterfly', 'Freestyle']
+
+men_one_hundred_winners = swimming_data[(swimming_data['Distance (m)'] == 100) & (swimming_data['Rank'] == 1) & 
+                                        (swimming_data['Gender'] == 'Men')]
+
+women_one_hundred_winners = swimming_data[(swimming_data['Distance (m)'] == 100) & (swimming_data['Rank'] == 1) & 
+                                          (swimming_data['Gender'] == 'Women')]
+    
+# Get minimum time (fastest) from each different type of stroke
+fastest_men_times = men_one_hundred_winners.groupby('Event')['Time_in_Seconds'].min()
+fastest_women_times = women_one_hundred_winners.groupby('Event')['Time_in_Seconds'].min()
+
+men_times = {}
+women_times = {}
+for i in range(4):
+    men_times[strokes[i]] = fastest_men_times[i]
+    women_times[strokes[i]] = fastest_women_times[i]
+
+strokes = men_times.keys()
+x_pos = [0, 1, 2, 3]
+bar_width = 0.2
+
+
+# Dictionary, so enumerate
+for i, stroke in enumerate(strokes):
+    men_label = ''
+    if i == 0:
+        men_label = 'Men'
+    women_label = ''
+    if i == 0:
+        women_label = 'Women'
+        
+    ax.bar(x_pos[i] - bar_width / 2, men_times[stroke], bar_width, label=men_label, color='cornflowerblue')
+    ax.bar(x_pos[i] + bar_width / 2, women_times[stroke], bar_width, label=women_label, color='palevioletred')
+
+
+ax.set_xlabel('Event', fontsize=14)
+ax.set_ylabel('Time (s)', fontsize=14)
+ax.set_title('Comparison of Fastest 100m Times for Men and Women', fontsize=16)
+
+ax.set_xticks(x_pos)
+ax.set_xticklabels(strokes, rotation=0)
+ax.legend()
+plt.tight_layout()
+
+plt.show()
+
+
+
+
+
+# VISUALIZATION 4
+# Bar graph of the top 10 countries with the highest number of athletes. Compares values between number of male and female athletes
+
+athletes_by_country_gender = swimming_data.groupby(['Country', 'Gender'])['Athlete'].nunique().reset_index()
+pivot_data = athletes_by_country_gender.pivot(index='Country', columns='Gender', values='Athlete')
+
+top_ten_countries = pivot_data.sum(axis=1).nlargest(10).index
+
+top_ten_data = pivot_data.loc[top_10_countries]
+
+top_ten_data.plot(kind='bar', figsize=(12, 8), color=['cornflowerblue', 'palevioletred'], edgecolor='black')
+
+plt.title("Top 10 Countries by Number of Athletes", fontsize=16)
+plt.xlabel('Country', fontsize=14)
+plt.ylabel('Number of Athletes', fontsize=14)
+
+plt.xticks(rotation=0, ha='right')  
+plt.legend(title="Gender", fontsize=14)
+plt.tight_layout()
+
+plt.show()
+
+
+
+
+
+
+# VISUALIZATION 5
+# Box plot of the men's 200m Individual Medley Times
+
+plt.figure(figsize=(12, 6))
+
+mens_two_hundred_im = swimming_data[
+    (swimming_data['Distance (m)'] == 200) & 
+    (swimming_data['Stroke'] == 'Individual medley') & 
+    (swimming_data['Gender'] == 'Men')
+]
+
+sns.boxplot(x='Year', y='Time_in_Seconds', data=mens_two_hundred_im)
+
+plt.title("Men's 200 Individual Medley (IM) Times by Olympic Year", fontsize=14)
+plt.xlabel("Olympic Year", fontsize=12)
+plt.ylabel("Time (Seconds)", fontsize=12)
+
+plt.xticks(rotation=45)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+
+plt.show()
+
+
+
+
+
+
+# VISUALIZATION 6
+# Box plot of the women's 200m Individual Medley Times
+
+plt.figure(figsize=(12, 8))
+
+womens_two_hundred_im = swimming_data[
+    (swimming_data['Distance (m)'] == 200) & 
+    (swimming_data['Stroke'] == 'Individual medley') & 
+    (swimming_data['Gender'] == 'Women')
+]
+
+# contains nan value, cannot plot with them
+womens_two_hundred_im = womens_two_hundred_im.dropna()
+sns.boxplot(x='Year', y='Time_in_Seconds', data=womens_two_hundred_im)
+
+plt.title("Women's 200 Individual Medley (IM) Times by Olympic Year", fontsize=14)
+plt.xlabel("Olympic Year", fontsize=12)
+plt.ylabel("Time (Seconds)", fontsize=12)
+
+plt.xticks(rotation=45)
+plt.grid(axis='y', linestyle='--', alpha=0.7)
+plt.tight_layout()
+
+plt.show()
+
+
+
+
+
+
+# VISUALIZATION 7
+# Combined box plot of the genders of the 200 IM results across all years 
+plt.figure(figsize=(12, 6))
+
+mens_two_hundred_im['Gender'] = 'Men'
+womens_two_hundred_im['Gender'] = 'Women'
+combined_200_im = pd.concat([mens_two_hundred_im, womens_two_hundred_im])
+
+sns.boxplot(data=combined_200_im, x='Year', y='Time_in_Seconds', hue='Gender', palette='Set2')
+
+plt.title('200 IM Best Times (Men & Women) Across Olympic Years')
+plt.xlabel('Year')
+plt.ylabel('Time in Seconds')
+
+plt.xticks(rotation=45)
+plt.legend(title='Gender')
+plt.tight_layout()
+
+plt.show()
+
+
+
+
+
+
+
+"""
+================== DATA ANALYSIS TECHNIQUES ==================
+"""
+
+# Implements logarithmic regression and calculates correlation in order to predict values 
+mens_winner_one_hundred_free = swimming_data[(swimming_data['Gender'] == 'Men') & 
+                            (swimming_data['Event'] == '100m Freestyle') &
+                            (swimming_data['Rank'] == 1)]
+
+mens_winner_one_hundred_free['Year'] = pd.to_numeric(mens_winner_one_hundred_free['Year'], errors='coerce')
+mens_winner_one_hundred_free['Time (s)'] = pd.to_numeric(mens_winner_one_hundred_free['Time (s)'], errors='coerce')
+
+x_values = mens_winner_one_hundred_free['Year']
+y_values = mens_winner_one_hundred_free['Time (s)']
+
+log_x = np.log(x_values)
+
+a, b = np.polyfit(log_x, y_values, 1)
+
+predicted_time = a * log_x + b
+
+
+fig, ax= plt.subplots()
+ax.scatter(x_values, y_values)
+ax.plot(x_values, predicted_time)
+
+plt.xlabel('Olympic Year')
+plt.ylabel('Time (s)')
+plt.title('100 Meter Freestyle Men Winners Time vs. Olympic Year')
+plt.legend()
+
+plt.show()
+
+log_correlation = np.corrcoef(log_x, mens_winner_one_hundred_free['Time (s)'])[0, 1]
+# R= -.96795. The correlation for this relationship is about -.96795, therefore the predictions that will be made are fairly accurate
+
+
+# CROSS TABULATION
+# Implementation of cross-tabulation using different countries and the gold medals they have won in the men's 100 breaststroke and the women's 100 breaststroke 
+# Shows if swimming in the Olympics for a speicfic country improves the chance you have of getting a gold medal for the specific event
+mens_one_hundred_breast = swimming_data[(swimming_data['Gender'] == 'Men') & (swimming_data['Event'] == '100m Breaststroke')]
+womens_one_hundred_breast = swimming_data[(swimming_data['Gender'] == 'Women') & (swimming_data['Event'] == '100m Breaststroke')]
+
+ct = pd.crosstab(mens_one_hundred_breast['Country'], mens_one_hundred_breast['Winner?'], normalize = 'index')
+ct.drop('No Data', axis = 1, inplace = True)
+ct
+
+ct1= pd.crosstab(womens_one_hundred_breast['Country'], womens_one_hundred_breast['Winner?'], normalize = 'index')
+ct1.drop('No Data', axis = 1, inplace = True)
+
+
+
+
