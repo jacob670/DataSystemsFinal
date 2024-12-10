@@ -1,6 +1,6 @@
 """
 Analyzing and interepting Olympic Swimming History data. Performed data inspection and clean up, aggregations, cross tabulation, logarithmic regression, and created data visualizations
-The dataset can be found here: https://www.kaggle.com/datasets/datasciencedonut/olympic-swimming-1912-to-2020?resource=download
+* The dataset can be found here: https://www.kaggle.com/datasets/datasciencedonut/olympic-swimming-1912-to-2020?resource=download
 Jacob Esteves, Cimi Halilaj, Owen Rogonjic
 """
 
@@ -53,7 +53,7 @@ head_values = swimming_data.head()
 # How many different Countries have medals?
 medal_list = [1,2,3]
 unique_teams = swimming_data[swimming_data['Rank'].isin(medal_list)]
-num_unique_medals = unique_teams['Team'].nunique()
+num_unique_medals = unique_teams['Country'].nunique()
 # There are 60 Countries with medals in the dataset.
 
 
@@ -155,7 +155,7 @@ def calculate_winner(rank):
 swimming_data['Winner?'] = swimming_data['Rank'].apply(calculate_winner)
 
 
-# The default data type for the results currently are objects. In order to perform data anaylsis techniques on the set, we must convert this column to floating point numbers
+# The default data type for the results currently are objects. In order to perform data anaylsis techniques on the set, this column must be converted to floats
 """
 MM:SS.sss & HH:MM:SS.ssssss need to convert to purely seconds
 """
@@ -180,8 +180,9 @@ def convert_results_seconds(result):
     else:
         return result
 
-
+# little bug, need to run this function as well to help convert this column to floats; not entirely sure why...
 def convert_float(value):
+    # tries to convert the value to a float, and if an exception is thrown such as value, just return None because we cannot use the data
     try:
         return float(value)
     except:
@@ -217,10 +218,8 @@ silver_medal_counts = silver_medal_counts.sort_values(ascending=False)
 # USA has the most silver medals with 171, followed by Australia with 67
 
 # Group all male swimmers by most gold medals
-male_gold_medals = swimming_data[
-    (swimming_data["Gender"] == "Men") & 
-    (swimming_data["Medal?"] == "Gold")
-]
+male_gold_medals = swimming_data[(swimming_data["Gender"] == "Men") & (swimming_data["Medal?"] == "Gold")]
+
 gold_medals_by_swimmer = male_gold_medals.groupby("Athlete").size()
 gold_medals_by_swimmer = gold_medals_by_swimmer.sort_values(ascending=False)
 # Micheal Phelps has the most gold medals in the dataset with 13, followed by Mark Spitz with 4
@@ -257,27 +256,26 @@ womens_100fly = swimming_data[
 mean_one_hundred_fly_time = womens_100fly["Results"].mean()
 
 
-# f. Display how many events there were in the 1984 Olympics. 
-# (Just need event column)
-swimming_1984 = swimming_data[swimming_data['Year'] == 1984]
-unique1984__events = swimming_1984['Event'].nunique()
+# Display how many events there were in the 1984 Olympics
+num_events_specific_olympics = swimming_data[swimming_data['Year'] == 1984]
+num_events_specific_olympics = num_events_specific_olympics['Event'].nunique()
+# There are 16 different unqiue events in the 1984 Olympics
 
-
-# g. Group the female swimmers only by name alphabetically.
+# Group the female swimmers alphabetically
 female_swimmers = swimming_data[swimming_data['Gender'] == 'Women']
-alphabetical_female_swimmers = female_swimmers.sort_values(by = 'Athlete')
+grouped_female_swimmers = female_swimmers.groupby('Athlete').size()
+# Aegje Ada Kok is the first female swimmer ordered alphabetically, and appears 3 times in the data set 
 
-
-# h. What was the average time of all of the winners of the 100 freestyle from the Olympic years 1912-1932. 
+# What was the average time of all of the winners of the 100 freestyle from the Olympic years 1912-1932. 
 # (Just need results float)
-early_winners_100free = swimming_data[
+early_winners_one_hundred_free = swimming_data[
     (swimming_data["Distance (m)"] == 100) &
     (swimming_data["Stroke"] == "Freestyle") &
     (swimming_data['Year'] <= 1932)
 ]
 
-mean_100free_time = early_winners_100free['Results'].mean()
-
+mean_one_hundred_free_time = early_winners_one_hundred_free['Time (s)'].mean()
+# The mean time of all the winners is 65.969 seconds.
 
 
 
@@ -541,7 +539,6 @@ a, b = np.polyfit(log_x, y_values, 1)
 
 predicted_time = a * log_x + b
 
-
 fig, ax= plt.subplots()
 ax.scatter(x_values, y_values)
 ax.plot(x_values, predicted_time)
@@ -554,6 +551,7 @@ plt.legend()
 plt.show()
 
 log_correlation = np.corrcoef(log_x, mens_winner_one_hundred_free['Time (s)'])[0, 1]
+#y = -316.756log(x) + 2456.024
 # R= -.96795. The correlation for this relationship is about -.96795, therefore the predictions that will be made are fairly accurate
 
 
@@ -565,7 +563,6 @@ womens_one_hundred_breast = swimming_data[(swimming_data['Gender'] == 'Women') &
 
 ct = pd.crosstab(mens_one_hundred_breast['Country'], mens_one_hundred_breast['Winner?'], normalize = 'index')
 ct.drop('No Data', axis = 1, inplace = True)
-ct
 
 ct1= pd.crosstab(womens_one_hundred_breast['Country'], womens_one_hundred_breast['Winner?'], normalize = 'index')
 ct1.drop('No Data', axis = 1, inplace = True)
